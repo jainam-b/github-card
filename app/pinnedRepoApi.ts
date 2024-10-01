@@ -1,6 +1,25 @@
 import { GraphQLClient, gql } from 'graphql-request';
 
-const fetchPinnedRepos = async (username: string) => {
+interface PinnedRepo {
+  name: string;
+  description: string | null;
+  stargazerCount: number;
+  url: string;
+  primaryLanguage: {
+    name: string;
+  } | null;
+}
+
+interface PinnedReposResponse {
+  user: {
+    pinnedItems: {
+      totalCount: number;
+      nodes: PinnedRepo[];
+    };
+  };
+}
+
+const fetchPinnedRepos = async (username: string): Promise<PinnedRepo[]> => {
   const endpoint = 'https://api.github.com/graphql';
   const graphQLClient = new GraphQLClient(endpoint, {
     headers: {
@@ -34,7 +53,7 @@ const fetchPinnedRepos = async (username: string) => {
   };
 
   try {
-    const data = await graphQLClient.request(query, variables);
+    const data = await graphQLClient.request<PinnedReposResponse>(query, variables);
     return data.user.pinnedItems.nodes;
   } catch (error) {
     console.error('Error fetching pinned repositories:', error);
