@@ -1,10 +1,12 @@
 import { GraphQLClient, gql } from 'graphql-request';
 
-interface PinnedRepo {
+export interface PinnedRepo {
   name: string;
   description: string | null;
   stargazerCount: number;
   url: string;
+  forks_count:number,
+  language:string,
   primaryLanguage: {
     name: string;
   } | null;

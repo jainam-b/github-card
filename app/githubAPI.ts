@@ -84,7 +84,7 @@ export const fetchTopReposByStars = async (username: string, limit = 5) => {
       },
     });
 
-    const topRepos = response.data.map((repo: { name: any; stargazers_count: any; html_url: any; }) => ({
+    const topRepos = response.data.map((repo: { name: string; stargazers_count: number; html_url: string; }) => ({
       name: repo.name,
       stars: repo.stargazers_count,
       html_url: repo.html_url,
