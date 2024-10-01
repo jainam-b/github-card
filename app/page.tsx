@@ -1,30 +1,54 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import axios from "axios";
-import { fetchUserData } from "./githubAPI";
+import { User, MapPin, Twitter, Mail, Code, Star, GitFork, ExternalLink } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { fetchUserData, fetchTopReposByStars, repoList } from "./githubAPI";
 import { fetchTotalContributions } from "./contributionApi";
-import { repoList } from "./githubAPI";  // Make sure to import repoList
+import fetchPinnedRepos from './pinnedRepoApi';
 
-export default function Home() {
-  const [user, setUser] = useState(null);
-  const [contributions, setContributions] = useState(null);
-  const [topLanguages, setTopLanguages] = useState([]);
+interface UserData {
+  name: string;
+  login: string;
+  avatar_url: string;
+  public_repos: number;
+  location: string | null;
+  twitter_username: string | null;
+  email: string | null;
+  bio: string | null;
+}
+
+interface PinnedRepo {
+  name: string;
+  description: string;
+  language: string;
+  stargazers_count: number;
+  forks_count: number;
+  html_url: string;
+}
+
+export default function GitHubProfile() {
+  const [user, setUser] = useState<UserData | null>(null);
+  const [contributions, setContributions] = useState<number | null>(null);
+  const [topLanguages, setTopLanguages] = useState<[string, number][]>([]);
+  const [pinnedRepos, setPinnedRepos] = useState<PinnedRepo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const username = "jainam-b";  
+        const username = "jainam-b";
         const [userData, contributionsData, languagesData] = await Promise.all([
           fetchUserData(username),
-          fetchTotalContributions("jainam-b"),  // Note: using a different username here
+          fetchTotalContributions(username),
           repoList(username)
         ]);
-
         setUser(userData);
         setContributions(contributionsData);
         setTopLanguages(languagesData);
+        const repos = await fetchPinnedRepos(username);
+        setPinnedRepos(repos);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -32,27 +56,133 @@ export default function Home() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorMessage message={error} />;
+  if (!user) return null;
 
   return (
-    <div>
-      {user && <div>{user.name}</div>}
-      {contributions && <div>Total Contributions: {contributions}</div>}
-      
-      {/* Display top 5 languages */}
-      <h2>Top 5 Languages</h2>
-      <ul>
-        {topLanguages.map(([language, score]) => (
-          <li key={language}>
-            <strong>{language}</strong> - Score: {score}
-          </li>
-        ))}
-      </ul>
+    <div className="w-[700px] h-[400px] mx-auto">
+      <Card className="w-full h-full overflow-hidden">
+        <CardContent className="p-4 flex flex-col h-full">
+          <div className="flex items-start mb-4">
+            <img src={user.avatar_url} alt={user.name} className="w-16 h-16 rounded-full mr-4" />
+            <div className="flex-grow">
+              <h2 className="text-xl font-bold">{user.name}</h2>
+              <p className="text-sm text-gray-500">@{user.login}</p>
+              <p className="text-sm text-gray-700 mt-1 line-clamp-2">{user.bio}</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+            <DetailItem icon={<User size={14} />} label="Repos" value={user.public_repos.toString()} />
+            <DetailItem icon={<Code size={14} />} label="Contributions" value={contributions?.toString() || "N/A"} />
+            <DetailItem icon={<MapPin size={14} />} label="Location" value={user.location || "N/A"} />
+            <DetailItem icon={<Twitter size={14} />} label="Twitter" value={user.twitter_username || "N/A"} />
+          </div>
+          
+          <div className="flex-grow flex">
+            <div className="w-1/3 pr-2 border-r">
+              <h3 className="text-sm font-semibold mb-2">Top Languages</h3>
+              <div className="space-y-1">
+                {topLanguages.slice(0, 4).map(([language, score]) => (
+                  <div key={language} className="flex items-center">
+                    <span className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: getLanguageColor(language) }}></span>
+                    <span className="text-xs">{language}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="w-2/3 pl-2">
+              <h3 className="text-sm font-semibold mb-2">Pinned Repositories</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {pinnedRepos.slice(0, 3).map((repo) => (
+                  <a key={repo.name} href={repo.html_url} target="_blank" rel="noopener noreferrer" 
+                     className="block bg-gray-50 rounded-md p-2 hover:bg-gray-100 transition-colors">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="font-medium text-sm text-blue-600 flex items-center">
+                        {repo.name}
+                        <ExternalLink size={12} className="ml-1 text-gray-400" />
+                      </h4>
+                      <div className="flex items-center space-x-2 text-xs text-gray-500">
+                        <span className="flex items-center"><Star size={12} className="mr-1" />{repo.stargazers_count}</span>
+                        <span className="flex items-center"><GitFork size={12} className="mr-1" />{repo.forks_count}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 line-clamp-2">{repo.description}</p>
+                    <div className="flex items-center mt-1">
+                      <span className="flex items-center text-xs text-gray-500">
+                        <div className="w-2 h-2 rounded-full mr-1" style={{ backgroundColor: getLanguageColor(repo.language) }}></div>
+                        {repo.language}
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
+}
+
+const DetailItem: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
+  <div className="flex items-center space-x-1">
+    {icon}
+    <span className="font-medium">{label}:</span>
+    <span className="text-gray-600">{value}</span>
+  </div>
+);
+
+const LoadingSkeleton: React.FC = () => (
+  <div className="w-[700px] h-[400px] mx-auto">
+    <Card className="w-full h-full">
+      <CardContent className="p-4 flex flex-col h-full">
+        <div className="flex items-start mb-4">
+          <Skeleton className="w-16 h-16 rounded-full mr-4" />
+          <div className="flex-grow">
+            <Skeleton className="h-6 w-1/2 mb-2" />
+            <Skeleton className="h-4 w-1/3 mb-2" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+        <div className="flex-grow flex">
+          <Skeleton className="w-1/3 h-full mr-2" />
+          <Skeleton className="w-2/3 h-full ml-2" />
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
+const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
+  <div className="w-[700px] h-[400px] mx-auto flex items-center justify-center">
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md text-sm" role="alert">
+      <strong className="font-bold">Error: </strong>
+      <span>{message}</span>
+    </div>
+  </div>
+);
+
+function getLanguageColor(language: string): string {
+  const colors: { [key: string]: string } = {
+    JavaScript: '#f1e05a',
+    TypeScript: '#2b7489',
+    Python: '#3572A5',
+    Java: '#b07219',
+    HTML: '#e34c26',
+    CSS: '#563d7c',
+    // Add more languages and colors as needed
+  };
+  return colors[language] || '#8e8e8e'; // Default color if language not found
 }

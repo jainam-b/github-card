@@ -65,12 +65,35 @@ export const repoList = async (username: string): Promise<[string, number][]> =>
 };
 
 // Usage example (make sure this is in an async function or top-level await is enabled)
-const displayTopLanguages = async (username: string) => {
+export const displayTopLanguages = async (username: string) => {
   const topLanguages = await repoList(username);
   topLanguages.forEach(([language, score]) => {
     console.log(`Language: ${language}, Score: ${score}`);
   });
 };
 
-// Example usage
-displayTopLanguages('jainam-b').catch(console.error);
+export const fetchTopReposByStars = async (username: string, limit = 5) => {
+  try {
+    const response = await axios.get(`https://api.github.com/users/${username}/repos`, {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_PAT}`, // Add your GitHub PAT
+      },
+      params: {
+        sort: "stars", // Sort repos by the number of stars
+        per_page: limit, // Limit the result to top N repos
+      },
+    });
+
+    const topRepos = response.data.map((repo: { name: any; stargazers_count: any; html_url: any; }) => ({
+      name: repo.name,
+      stars: repo.stargazers_count,
+      html_url: repo.html_url,
+    }));
+
+    console.log(`Top ${limit} repositories by stars:`, topRepos);
+    return topRepos;
+  } catch (error) {
+    console.error(`Error fetching top repositories by stars for ${username}:`, error);
+    return [];
+  }
+};
