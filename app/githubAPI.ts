@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const GITHUB_API_URL = process.env.NEXT_PUBLIC_API_URL;
-const GITHUB_TOKEN = process.env.GITHUB_PAT;
+const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_PAT;
 
 
 export const fetchUserData = async (username: string) => {
@@ -23,7 +23,7 @@ const fetchRepoLanguages = async (username: string, repoName: string): Promise<R
     const language_url = `https://api.github.com/repos/${username}/${repoName}/languages`;
     const { data: languages } = await axios.get<Record<string, number>>(language_url, {
       headers: {
-        'Authorization': `Bearer ${process.env.GITHUB_PAT}`,
+        'Authorization': `Bearer ${GITHUB_TOKEN}`,
       },
     });
     return languages;
@@ -39,7 +39,7 @@ export const repoList = async (username: string): Promise<[string, number][]> =>
     const repo_url = user.repos_url;
     const { data: repos } = await axios.get<Array<{ name: string }>>(repo_url, {
       headers: {
-        'Authorization': `Bearer ${process.env.GITHUB_PAT}`,
+        'Authorization': `Bearer ${GITHUB_TOKEN}`,
       },
     });
 

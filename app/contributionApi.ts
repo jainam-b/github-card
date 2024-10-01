@@ -22,7 +22,7 @@ export const fetchTotalContributions = async (username: string): Promise<number 
       },
       {
         headers: {
-          Authorization: `${process.env.GITHUB_PAT}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_PAT}`,
           'Content-Type': 'application/json',
         },
       }
