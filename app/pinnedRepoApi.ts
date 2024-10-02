@@ -1,6 +1,7 @@
 import { GraphQLClient, gql } from 'graphql-request';
 
 export interface PinnedRepo {
+  openGraphImageUrl: string;
   name: string;
   description: string | null;
   stargazerCount: number;
@@ -8,6 +9,7 @@ export interface PinnedRepo {
   forks_count:number,
   language:string,
   primaryLanguage: {
+    color:  | undefined;
     name: string;
   } | null;
 }
@@ -32,7 +34,7 @@ const fetchPinnedRepos = async (username: string): Promise<PinnedRepo[]> => {
   const query = gql`
     query($username: String!) {
       user(login: $username) {
-        pinnedItems(first: 3, types: REPOSITORY) {
+        pinnedItems(first: 4, types: REPOSITORY) {
           totalCount
           nodes {
             ... on Repository {
