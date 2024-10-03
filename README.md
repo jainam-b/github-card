@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitHub Profile Fetcher
 
-## Getting Started
+This project is a web application built using Next.js that allows users to fetch and display a GitHub user's profile, contributions, top programming languages, and pinned repositories. The interface provides a clean and responsive design with real-time data fetching from the GitHub API.
 
-First, run the development server:
+<img width="853" alt="Screenshot 2024-10-03 at 9 06 25 AM" src="https://github.com/user-attachments/assets/dd1fd321-f881-4c53-88b2-6c6cb4f2d32c">
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Search for a GitHub user by username.
+- Display the following information:
+  - Public repositories count.
+  - Total contributions.
+  - Location and Twitter handle (if available).
+- View the top programming languages used by the user, represented by a progress bar.
+- List pinned repositories with stars, forks, and brief descriptions.
+- Responsive design with a skeleton loading screen for smooth user experience.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies Used
 
-## Learn More
+- **Next.js** for server-side rendering (SSR) and SEO-friendly pages.
+- **React** for building the dynamic user interface.
+- **Tailwind CSS** for responsive and utility-first styling.
+- **Lucide Icons** for modern and minimalist icons.
+- **GitHub API** for fetching user data, repositories, and contributions.
 
-To learn more about Next.js, take a look at the following resources:
+## How It Works
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Users can input a GitHub username to retrieve relevant information.
+2. The app fetches user data, including contributions and pinned repositories, and displays them.
+3. The top programming languages used by the user are visualized with progress bars showing usage percentages.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.
